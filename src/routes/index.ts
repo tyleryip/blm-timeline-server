@@ -1,12 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { Router } from 'express';
+import timeline from './timeline';
 
 const router = Router();
-
-[
-  'timeline'
-].forEach(route => {
-  router.use(`/${route}`, require(`./${route}`).default);
-});
+router.use('/timeline', timeline);
 
 export default router;

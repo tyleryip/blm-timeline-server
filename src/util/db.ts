@@ -1,4 +1,4 @@
-import { Pool, QueryResult } from "pg";
+import { Pool, QueryResult } from 'pg';
 
 let pool: Pool;
 
@@ -14,13 +14,13 @@ export const init = (): void => {
       description varchar(500),
       link varchar(2048),
       date date NOT NULL
-    );`
+    );`,
   );
 };
 
 export const query = (
   text: string,
-  params: Array<any> = []
+  params: Array<any> = [],
 ): Promise<QueryResult<any>> => {
   return pool.query(text, params);
 };
