@@ -18,6 +18,14 @@ export const init = (): void => {
       date date NOT NULL
     );`,
   );
+
+  pool.query(
+    `CREATE TABLE IF NOT EXISTS cities (
+      id varchar(36) NOT NULL UNIQUE PRIMARY KEY,
+      name varchar(2048) NOT NULL UNIQUE,
+      colour varchar(36) NOT NULL UNIQUE
+    );`,
+  );
 };
 
 export const query = (

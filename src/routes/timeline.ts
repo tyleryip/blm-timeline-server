@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { query } from '../util/db';
 import { QueryResult } from 'pg';
 import { v4 as uuid } from 'uuid';
-import TimelineItem from '../models/timelineItem';
+//import TimelineItem from '../models/timelinePost';
 
 const router = Router();
 
@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const data: TimelineItem = {
+  const data = {
     id: uuid(),
     title: req.body?.title || null,
     text: req.body?.text || '',

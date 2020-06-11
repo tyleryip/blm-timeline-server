@@ -1,8 +1,10 @@
-export default interface TimelineItem {
+import City from "./city";
+
+export default interface TimelinePost {
   id: string;
   title: string;
   text?: string;
-  location: string;
+  city: City; 
   imageURL?: string;
   newsURL: string;
   date: Date;
