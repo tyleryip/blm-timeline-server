@@ -11,8 +11,10 @@ export const init = (): void => {
     `CREATE TABLE IF NOT EXISTS timeline_posts (
       id varchar(36) NOT NULL UNIQUE PRIMARY KEY,
       title varchar(100) NOT NULL,
-      description varchar(500),
-      link varchar(2048),
+      text varchar(500),
+      location varchar(2048) NOT NULL,
+      imageURL varchar(2048),
+      newsURL varchar(2048) NOT NULL,
       date date NOT NULL
     );`,
   );
