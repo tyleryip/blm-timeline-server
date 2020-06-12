@@ -11,7 +11,7 @@ async function generateColour() {
   var colour: string;
   while (true) {
     var found = true;
-    colour = randomColor();
+    colour = randomColor({luminosity: 'dark'});
     for (var i in cities.rows) {
       if (colour == i) {
         found = false;
