@@ -1,11 +1,12 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import routes from './routes';
 import { init as initDB } from './util/db';
 
-dotenv.config();
 initDB();
 
 const port = process.env.PORT;

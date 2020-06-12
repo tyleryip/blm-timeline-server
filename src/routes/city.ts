@@ -3,16 +3,17 @@ import { QueryResult } from 'pg';
 import { query } from '../util/db';
 import { v4 as uuid } from 'uuid';
 import randomColor from 'randomcolor';
+import { requireAuth } from '../util/auth';
 
 const router = Router();
 
 async function generateColour() {
-  var cities = await query('SELECT colour FROM cities;');
-  var colour: string;
+  const cities = await query('SELECT colour FROM cities;');
+  let colour: string;
   while (true) {
-    var found = true;
+    let found = true;
     colour = randomColor({luminosity: 'dark'});
-    for (var i in cities.rows) {
+    for (const i in cities.rows) {
       if (colour == i) {
         found = false;
         break;
@@ -34,7 +35,7 @@ router.get('/', (req, res) => {
     });
 });
 
-router.post('/', async (req, res) => {
+router.post('/', requireAuth, async (req, res) => {
   const data = {
     id: uuid(),
     name: req.body?.name || null,
