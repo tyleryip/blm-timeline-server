@@ -45,7 +45,7 @@ router.post('/', requireAuth, (req, res) => {
     id: uuid(),
     title: req.body?.title.substring(0, 100) || null,
     text: req.body?.text || '',
-    cityName: req.body?.cityName || null,
+    cityName: req.body?.cityName.toLowerCase() || null,
     imageURL: req.body?.imageURL || null,
     newsURL: req.body?.newsURL || null,
     date: new Date(req.body?.date || null),
