@@ -25,6 +25,19 @@ async function generateColour() {
   }
 }
 
+export async function addCity(cityname: string){
+  const data = {
+    id: uuid(),
+    name: cityname || null,
+    colour: await generateColour() || null,
+  };
+
+  query(
+    `INSERT INTO cities (id, name, colour) VALUES ($1, $2, $3) RETURNING *;`,
+    [data.id, data.name, data.colour],
+  )
+}
+
 router.get('/', (req, res) => {
   query('SELECT * FROM cities;')
     .then((dbRes: QueryResult<any>) => {
