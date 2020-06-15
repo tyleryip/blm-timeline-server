@@ -1,7 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { QueryResult } from 'pg';
-import { query } from '../util/db';
-import { v4 as uuid } from 'uuid';
+import { query, createID } from '../util/db';
 import randomColor from 'randomcolor';
 import { requireAuth } from '../util/auth';
 
@@ -27,7 +26,7 @@ async function generateColour(): Promise<string> {
 
 export async function addCity(cityname: string): Promise<QueryResult<any>> {
   const data = {
-    id: uuid(),
+    id: createID(),
     name: cityname || null,
     colour: (await generateColour()) || null,
   };
@@ -44,13 +43,14 @@ router.get('/', (req: Request, res: Response) => {
       res.json(dbRes.rows);
     })
     .catch((err: any) => {
-      res.status(500).json({ error: err });
+      console.error(err.stack);
+      res.status(500).json({ error: 'An error occured' });
     });
 });
 
 router.post('/', requireAuth, async (req: Request, res: Response) => {
   const data = {
-    id: uuid(),
+    id: createID(),
     name: req.body?.name.substring(0, 2048) || null,
     colour: (await generateColour()) || null,
   };
@@ -68,7 +68,8 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       res.json(dbRes.rows[0]);
     })
     .catch((err: any) => {
-      res.status(500).json({ error: err });
+      console.error(err.stack);
+      res.status(500).json({ error: 'An error occured' });
     });
 });
 

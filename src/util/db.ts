@@ -1,4 +1,5 @@
 import { Pool, QueryResult } from 'pg';
+import { v4 as uuid } from 'uuid';
 
 let pool: Pool;
 
@@ -34,6 +35,8 @@ export const query = (
 ): Promise<QueryResult<any>> => {
   return pool.query(text, params);
 };
+
+export const createID = (): string => uuid().split('-').join('');
 
 export const mapKeys = (
   obj: Record<string, any>,
