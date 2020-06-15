@@ -35,7 +35,10 @@ export const query = (
   return pool.query(text, params);
 };
 
-export const mapKeys = (obj: Record<string, any>, mappings: Array<any>): Record<string, any> => {
+export const mapKeys = (
+  obj: Record<string, any>,
+  mappings: Array<any>,
+): Record<string, any> => {
   const newObj = Object.assign({}, obj);
 
   mappings.forEach(([from, to]) => {

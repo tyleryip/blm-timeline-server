@@ -1,10 +1,10 @@
-import City from "./city";
+import City from './city';
 
 export default interface TimelinePost {
   id: string;
   title: string;
   text?: string;
-  city: City; 
+  city: City;
   imageURL?: string;
   newsURL: string;
   date: Date;

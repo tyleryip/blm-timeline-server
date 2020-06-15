@@ -12,7 +12,7 @@ async function generateColour(): Promise<string> {
   let colour: string;
   while (true) {
     let found = true;
-    colour = randomColor({luminosity: 'dark'});
+    colour = randomColor({ luminosity: 'dark' });
     for (const i in cities.rows) {
       if (colour == i) {
         found = false;
@@ -29,7 +29,7 @@ export async function addCity(cityname: string): Promise<QueryResult<any>> {
   const data = {
     id: uuid(),
     name: cityname || null,
-    colour: await generateColour() || null,
+    colour: (await generateColour()) || null,
   };
 
   return query(
@@ -52,7 +52,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
   const data = {
     id: uuid(),
     name: req.body?.name.substring(0, 2048) || null,
-    colour: await generateColour() || null,
+    colour: (await generateColour()) || null,
   };
 
   if (data.name == null || data.colour == null) {
