@@ -1,4 +1,5 @@
 import { Pool, QueryResult } from 'pg';
+import { v4 as uuid } from 'uuid';
 
 let pool: Pool;
 
@@ -35,7 +36,12 @@ export const query = (
   return pool.query(text, params);
 };
 
-export const mapKeys = (obj: any, mappings: Array<any>): any => {
+export const createID = (): string => uuid().split('-').join('');
+
+export const mapKeys = (
+  obj: Record<string, any>,
+  mappings: Array<any>,
+): Record<string, any> => {
   const newObj = Object.assign({}, obj);
 
   mappings.forEach(([from, to]) => {

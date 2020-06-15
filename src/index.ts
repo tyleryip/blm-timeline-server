@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import routes from './routes';
@@ -12,8 +12,8 @@ initDB();
 const port = process.env.PORT;
 const app = express();
 
-// Log all routes
-app.use((req, res, next) => {
+// Log all routes to console
+app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method}: ${req.url}`);
   next();
 });
@@ -22,9 +22,9 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(routes);
 
-app.use('*', (req, res) => {
-  res.status(418).json({
-    error: 'that route dont exist',
+app.use('*', (req: Request, res: Response) => {
+  res.status(401).json({
+    error: 'Unauthorized',
   });
 });
 

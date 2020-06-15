@@ -1,13 +1,13 @@
-import { Router } from 'express';
-import { query, mapKeys } from '../util/db';
+import { Router, Request, Response } from 'express';
+import { query, createID } from '../util/db';
 import { QueryResult } from 'pg';
-import { v4 as uuid } from 'uuid';
 import { requireAuth } from '../util/auth';
 import { addCity } from './city';
+import TimelinePost, { fromDatabase } from '../models/timelinePost';
 
 const router = Router();
 
-async function checkForCity(name) {
+async function checkForCity(name): Promise<void> {
   const cities = await query('SELECT name FROM cities;');
   //if city is in db, do nothing
   for (const i in cities.rows) {
@@ -19,30 +19,22 @@ async function checkForCity(name) {
   addCity(name);
 }
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
   query(
-    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name;',
+    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;',
   )
     .then((dbRes: QueryResult<any>) => {
-      res.json(
-        dbRes.rows.map((row) =>
-          mapKeys(row, [
-            ['city_name', 'cityName'],
-            ['news_url', 'newsURL'],
-            ['image_url', 'imageURL'],
-          ]),
-        ),
-      );
+      res.json(dbRes.rows.map((row) => fromDatabase(row)));
     })
     .catch((err: any) => {
-      console.log(err);
-      res.status(500).json({ error: err });
+      console.log(err.stack);
+      res.status(500).json({ error: 'An error occured' });
     });
 });
 
-router.post('/', requireAuth, (req, res) => {
-  const data = {
-    id: uuid(),
+router.post('/', requireAuth, (req: Request, res: Response) => {
+  const data: TimelinePost = {
+    id: createID(),
     title: req.body?.title.substring(0, 100) || null,
     text: req.body?.text || '',
     cityName: req.body?.cityName.toLowerCase() || null,
@@ -71,16 +63,11 @@ router.post('/', requireAuth, (req, res) => {
     ],
   )
     .then((dbRes: QueryResult<any>) => {
-      res.json(
-        mapKeys(dbRes.rows[0], [
-          ['city_name', 'cityName'],
-          ['news_url', 'newsURL'],
-          ['image_url', 'imageURL'],
-        ]),
-      );
+      res.json(fromDatabase(dbRes.rows[0]));
     })
     .catch((err: any) => {
-      res.status(500).json({ error: err });
+      console.error(err.stack);
+      res.status(500).json({ error: 'An error occured' });
     });
 });
 
