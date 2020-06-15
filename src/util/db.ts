@@ -10,11 +10,11 @@ export const init = (): void => {
   pool.query(
     `CREATE TABLE IF NOT EXISTS timeline_posts (
       id varchar(36) NOT NULL UNIQUE PRIMARY KEY,
-      title varchar(100) NOT NULL,
-      text varchar(500),
-      cityname varchar(2048) NOT NULL,
-      imageURL varchar(2048),
-      newsURL varchar(2048) NOT NULL,
+      title TEXT NOT NULL,
+      text TEXT,
+      city_name TEXT NOT NULL,
+      image_url TEXT,
+      news_url TEXT NOT NULL,
       date date NOT NULL
     );`,
   );
@@ -33,4 +33,15 @@ export const query = (
   params: Array<any> = [],
 ): Promise<QueryResult<any>> => {
   return pool.query(text, params);
+};
+
+export const mapKeys = (obj: any, mappings: Array<any>): any => {
+  const newObj = Object.assign({}, obj);
+
+  mappings.forEach(([from, to]) => {
+    newObj[to] = obj[from];
+    delete newObj[from];
+  });
+
+  return newObj;
 };

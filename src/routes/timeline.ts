@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { query } from '../util/db';
+import { query, mapKeys } from '../util/db';
 import { QueryResult } from 'pg';
 import { v4 as uuid } from 'uuid';
 import { requireAuth } from '../util/auth';
@@ -15,18 +15,27 @@ async function checkForCity(name) {
       return;
     }
   }
-    //if city is not in db, create it
+  //if city is not in db, create it
   addCity(name);
 }
 
 router.get('/', (req, res) => {
   query(
-    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.cityname = cities.name;',
+    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name;',
   )
     .then((dbRes: QueryResult<any>) => {
-      res.json(dbRes.rows);
+      res.json(
+        dbRes.rows.map((row) =>
+          mapKeys(row, [
+            ['city_name', 'cityName'],
+            ['news_url', 'newsURL'],
+            ['image_url', 'imageURL'],
+          ]),
+        ),
+      );
     })
     .catch((err: any) => {
+      console.log(err);
       res.status(500).json({ error: err });
     });
 });
@@ -34,9 +43,9 @@ router.get('/', (req, res) => {
 router.post('/', requireAuth, (req, res) => {
   const data = {
     id: uuid(),
-    title: req.body?.title || null,
+    title: req.body?.title.substring(0, 100) || null,
     text: req.body?.text || '',
-    cityname: req.body?.cityname || null,
+    cityName: req.body?.cityName || null,
     imageURL: req.body?.imageURL || null,
     newsURL: req.body?.newsURL || null,
     date: new Date(req.body?.date || null),
@@ -47,22 +56,28 @@ router.post('/', requireAuth, (req, res) => {
     return;
   }
 
-  checkForCity(data.cityname);
+  checkForCity(data.cityName);
 
   query(
-    `INSERT INTO timeline_posts (id, title, text, cityname, newsURL, imageURL, date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;`,
+    `INSERT INTO timeline_posts (id, title, text, city_name, news_url, image_url, date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;`,
     [
       data.id,
       data.title,
       data.text,
-      data.cityname,
+      data.cityName,
       data.newsURL,
       data.imageURL,
       data.date.toISOString(),
     ],
   )
     .then((dbRes: QueryResult<any>) => {
-      res.json(dbRes.rows[0]);
+      res.json(
+        mapKeys(dbRes.rows[0], [
+          ['city_name', 'cityName'],
+          ['news_url', 'newsURL'],
+          ['image_url', 'imageURL'],
+        ]),
+      );
     })
     .catch((err: any) => {
       res.status(500).json({ error: err });

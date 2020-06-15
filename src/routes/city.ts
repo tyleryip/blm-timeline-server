@@ -25,7 +25,7 @@ async function generateColour() {
   }
 }
 
-export async function addCity(cityname: string){
+export async function addCity(cityname: string) {
   const data = {
     id: uuid(),
     name: cityname || null,
@@ -51,7 +51,7 @@ router.get('/', (req, res) => {
 router.post('/', requireAuth, async (req, res) => {
   const data = {
     id: uuid(),
-    name: req.body?.name || null,
+    name: req.body?.name.substring(0, 2048) || null,
     colour: await generateColour() || null,
   };
 
