@@ -21,7 +21,7 @@ async function checkForCity(name) {
 
 router.get('/', (req, res) => {
   query(
-    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name;',
+    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;',
   )
     .then((dbRes: QueryResult<any>) => {
       res.json(
