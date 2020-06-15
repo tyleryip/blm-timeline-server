@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { QueryResult } from 'pg';
 import { query } from '../util/db';
 import { v4 as uuid } from 'uuid';
@@ -7,7 +7,7 @@ import { requireAuth } from '../util/auth';
 
 const router = Router();
 
-async function generateColour() {
+async function generateColour(): Promise<string> {
   const cities = await query('SELECT colour FROM cities;');
   let colour: string;
   while (true) {
@@ -25,20 +25,20 @@ async function generateColour() {
   }
 }
 
-export async function addCity(cityname: string) {
+export async function addCity(cityname: string): Promise<QueryResult<any>> {
   const data = {
     id: uuid(),
     name: cityname || null,
     colour: await generateColour() || null,
   };
 
-  query(
+  return query(
     `INSERT INTO cities (id, name, colour) VALUES ($1, $2, $3) RETURNING *;`,
     [data.id, data.name, data.colour],
-  )
+  );
 }
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
   query('SELECT * FROM cities;')
     .then((dbRes: QueryResult<any>) => {
       res.json(dbRes.rows);
@@ -48,7 +48,7 @@ router.get('/', (req, res) => {
     });
 });
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', requireAuth, async (req: Request, res: Response) => {
   const data = {
     id: uuid(),
     name: req.body?.name.substring(0, 2048) || null,

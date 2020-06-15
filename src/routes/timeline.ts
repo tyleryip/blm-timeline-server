@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { query, mapKeys } from '../util/db';
 import { QueryResult } from 'pg';
 import { v4 as uuid } from 'uuid';
@@ -7,7 +7,7 @@ import { addCity } from './city';
 
 const router = Router();
 
-async function checkForCity(name) {
+async function checkForCity(name): Promise<void> {
   const cities = await query('SELECT name FROM cities;');
   //if city is in db, do nothing
   for (const i in cities.rows) {
@@ -19,7 +19,7 @@ async function checkForCity(name) {
   addCity(name);
 }
 
-router.get('/', (req, res) => {
+router.get('/', (req: Request, res: Response) => {
   query(
     'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;',
   )
@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
     });
 });
 
-router.post('/', requireAuth, (req, res) => {
+router.post('/', requireAuth, (req: Request, res: Response) => {
   const data = {
     id: uuid(),
     title: req.body?.title.substring(0, 100) || null,
