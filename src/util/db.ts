@@ -44,10 +44,14 @@ export const mapKeys = (
 ): Record<string, any> => {
   const newObj = Object.assign({}, obj);
 
-  mappings.forEach(([from, to]) => {
-    newObj[to] = obj[from];
-    delete newObj[from];
-  });
+  if (obj != null) {
+    mappings.forEach(([from, to]) => {
+      if (obj[from] != null) {
+        newObj[to] = obj[from];
+        delete newObj[from];
+      }
+    });
+  }
 
   return newObj;
 };

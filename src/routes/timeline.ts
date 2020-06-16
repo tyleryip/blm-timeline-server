@@ -11,7 +11,7 @@ async function checkForCity(name): Promise<void> {
   const cities = await query('SELECT name FROM cities;');
   //if city is in db, do nothing
   for (const i in cities.rows) {
-    if (name == i) {
+    if (name === cities.rows[i]?.name) {
       return;
     }
   }
@@ -21,13 +21,14 @@ async function checkForCity(name): Promise<void> {
 
 router.get('/', (req: Request, res: Response) => {
   query(
-    'SELECT * FROM timeline_posts INNER JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;',
+    `SELECT timeline_posts.id, title, text, city_name, colour, image_url, news_url, date FROM timeline_posts
+      INNER JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;`,
   )
-    .then((dbRes: QueryResult<any>) => {
+    .then((dbRes: QueryResult<TimelinePost>) => {
       res.json(dbRes.rows.map((row) => fromDatabase(row)));
     })
     .catch((err: any) => {
-      console.log(err.stack);
+      console.error(err.stack);
       res.status(500).json({ error: 'An error occured' });
     });
 });
@@ -35,9 +36,9 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/', requireAuth, (req: Request, res: Response) => {
   const data: TimelinePost = {
     id: createID(),
-    title: req.body?.title.substring(0, 100) || null,
+    title: req.body?.title?.substring(0, 100) || null,
     text: req.body?.text || '',
-    cityName: req.body?.cityName.toLowerCase() || null,
+    cityName: req.body?.cityName?.toLowerCase() || null,
     imageURL: req.body?.imageURL || null,
     newsURL: req.body?.newsURL || null,
     date: new Date(req.body?.date || null),
@@ -48,7 +49,9 @@ router.post('/', requireAuth, (req: Request, res: Response) => {
     return;
   }
 
-  checkForCity(data.cityName);
+  if (data.cityName != null) {
+    checkForCity(data.cityName);
+  }
 
   query(
     `INSERT INTO timeline_posts (id, title, text, city_name, news_url, image_url, date) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;`,
@@ -62,11 +65,79 @@ router.post('/', requireAuth, (req: Request, res: Response) => {
       data.date.toISOString(),
     ],
   )
-    .then((dbRes: QueryResult<any>) => {
+    .then((dbRes: QueryResult<TimelinePost>) => {
       res.json(fromDatabase(dbRes.rows[0]));
     })
     .catch((err: any) => {
       console.error(err.stack);
+      res.status(500).json({ error: 'An error occured' });
+    });
+});
+
+router.patch('/:postId', requireAuth, (req: Request, res: Response) => {
+  const postId = req.params?.postId;
+
+  if (!postId) {
+    res.status(400).json({ error: 'Invalid request' });
+    return;
+  }
+
+  const data: TimelinePost = {
+    id: postId,
+    title: req.body?.title?.substring(0, 100) || null,
+    text: req.body?.text || null,
+    cityName: req.body?.cityName || null,
+    imageURL: req.body?.imageURL || null,
+    newsURL: req.body?.newsURL || null,
+    date: new Date(req.body?.date || null),
+  };
+
+  if (data.cityName != null) {
+    checkForCity(data.cityName);
+  }
+
+  query(
+    `UPDATE timeline_posts SET
+      title = COALESCE($1, title),
+      text = COALESCE($2, text),
+      city_name = COALESCE($3, city_name),
+      image_url = COALESCE($4, image_url),
+      news_url = COALESCE($5, news_url),
+      date = COALESCE($6, date)
+    WHERE id = $7 RETURNING *;`,
+    [
+      data.title,
+      data.text,
+      data.cityName,
+      data.imageURL,
+      data.newsURL,
+      data.date,
+      data.id,
+    ],
+  )
+    .then((dbRes: QueryResult<TimelinePost>) => {
+      res.json(fromDatabase(dbRes.rows[0]));
+    })
+    .catch((err: any) => {
+      console.error(err.stack);
+      res.status(500).json({ error: 'An error occured' });
+    });
+});
+
+router.delete('/:postId', requireAuth, (req: Request, res: Response) => {
+  const postId = req.params?.postId;
+
+  if (!postId) {
+    res.status(400).json({ error: 'Invalid request' });
+    return;
+  }
+
+  query(`DELETE FROM timeline_posts WHERE id = $1 RETURNING *;`, [postId])
+    .then((dbRes: QueryResult<TimelinePost>) => {
+      res.json(fromDatabase(dbRes.rows[0]));
+    })
+    .catch((err: any) => {
+      console.error(err);
       res.status(500).json({ error: 'An error occured' });
     });
 });
