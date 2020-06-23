@@ -35,7 +35,7 @@ async function checkForCity(name: string): Promise<void> {
 router.get('/', (req: Request, res: Response) => {
   query(
     `SELECT timeline_posts.id, title, text, city_name, colour, image_url, news_url, date FROM timeline_posts
-      INNER JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;`,
+      LEFT JOIN cities ON timeline_posts.city_name = cities.name ORDER BY date DESC;`,
   )
     .then((dbRes: QueryResult<TimelinePost>) => {
       res.json(dbRes.rows.map((row) => fromDatabase(row)));
