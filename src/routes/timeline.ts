@@ -49,9 +49,9 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/', requireAuth, (req: Request, res: Response) => {
   const data: TimelinePost = {
     id: createID(),
-    title: sanitize(req.body?.title?.substring(0, 100)) || null,
-    text: sanitize(req.body?.text) || '',
-    cityName: sanitize(req.body?.cityName?.toLowerCase()) || null,
+    title: req.body?.title?.substring(0, 100) || null,
+    text: req.body?.text || '',
+    cityName: req.body?.cityName?.toLowerCase() || null,
     imageURL: req.body?.imageURL || null,
     newsURL: req.body?.newsURL || null,
     date: new Date(req.body?.date || null),
