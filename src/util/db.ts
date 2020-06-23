@@ -13,7 +13,7 @@ export const init = (): void => {
       id varchar(36) NOT NULL UNIQUE PRIMARY KEY,
       title TEXT NOT NULL,
       text TEXT,
-      city_name TEXT NOT NULL,
+      city_name TEXT,
       image_url TEXT,
       news_url TEXT NOT NULL,
       date date NOT NULL
