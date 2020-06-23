@@ -7,7 +7,20 @@ import TimelinePost, { fromDatabase } from '../models/timelinePost';
 
 const router = Router();
 
-async function checkForCity(name): Promise<void> {
+function sanitize(string: string) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '/': '&#x2F;',
+  };
+  const reg = /[&<>"'/]/gi;
+  return string.replace(reg, (match) => map[match]);
+}
+
+async function checkForCity(name: string): Promise<void> {
   const cities = await query('SELECT name FROM cities;');
   //if city is in db, do nothing
   for (const i in cities.rows) {
@@ -36,9 +49,9 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/', requireAuth, (req: Request, res: Response) => {
   const data: TimelinePost = {
     id: createID(),
-    title: req.body?.title?.substring(0, 100) || null,
-    text: req.body?.text || '',
-    cityName: req.body?.cityName?.toLowerCase() || null,
+    title: sanitize(req.body?.title?.substring(0, 100)) || null,
+    text: sanitize(req.body?.text) || '',
+    cityName: sanitize(req.body?.cityName?.toLowerCase()) || null,
     imageURL: req.body?.imageURL || null,
     newsURL: req.body?.newsURL || null,
     date: new Date(req.body?.date || null),
