@@ -27,6 +27,15 @@ export const init = (): void => {
       colour varchar(36) NOT NULL UNIQUE
     );`,
   );
+
+  pool.query(
+    `CREATE TABLE IF NOT EXISTS users (
+      id varchar(36) NOT NULL UNIQUE PRIMARY KEY,
+      email TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      is_admin BOOLEAN
+    );`,
+  );
 };
 
 export const query = (
@@ -42,16 +51,15 @@ export const mapKeys = (
   obj: Record<string, any>,
   mappings: Array<any>,
 ): Record<string, any> => {
+  if (!obj) return obj;
   const newObj = Object.assign({}, obj);
 
-  if (obj != null) {
-    mappings.forEach(([from, to]) => {
-      if (obj[from] != null) {
-        newObj[to] = obj[from];
-        delete newObj[from];
-      }
-    });
-  }
+  mappings.forEach(([from, to]) => {
+    if (obj[from] != null) {
+      newObj[to] = obj[from];
+      delete newObj[from];
+    }
+  });
 
   return newObj;
 };

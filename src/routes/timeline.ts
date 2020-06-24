@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { query, createID } from '../util/db';
 import { QueryResult } from 'pg';
-import { requireAuth } from '../util/auth';
+import { requireAuth, requireAdmin } from '../util/auth';
 import { addCity } from './city';
 import TimelinePost, { fromDatabase } from '../models/timelinePost';
 
@@ -46,7 +46,7 @@ router.get('/', (req: Request, res: Response) => {
     });
 });
 
-router.post('/', requireAuth, (req: Request, res: Response) => {
+router.post('/', [requireAuth, requireAdmin], (req: Request, res: Response) => {
   const data: TimelinePost = {
     id: createID(),
     title: req.body?.title?.substring(0, 100) || null,
@@ -87,30 +87,33 @@ router.post('/', requireAuth, (req: Request, res: Response) => {
     });
 });
 
-router.patch('/:postId', requireAuth, (req: Request, res: Response) => {
-  const postId = req.params?.postId;
+router.patch(
+  '/:postId',
+  [requireAuth, requireAdmin],
+  (req: Request, res: Response) => {
+    const postId = req.params?.postId;
 
-  if (!postId) {
-    res.status(400).json({ error: 'Invalid request' });
-    return;
-  }
+    if (!postId) {
+      res.status(400).json({ error: 'Invalid request' });
+      return;
+    }
 
-  const data: TimelinePost = {
-    id: postId,
-    title: req.body?.title?.substring(0, 100) || null,
-    text: req.body?.text || null,
-    cityName: req.body?.cityName || null,
-    imageURL: req.body?.imageURL || null,
-    newsURL: req.body?.newsURL || null,
-    date: new Date(req.body?.date || null),
-  };
+    const data: TimelinePost = {
+      id: postId,
+      title: req.body?.title?.substring(0, 100) || null,
+      text: req.body?.text || null,
+      cityName: req.body?.cityName || null,
+      imageURL: req.body?.imageURL || null,
+      newsURL: req.body?.newsURL || null,
+      date: new Date(req.body?.date || null),
+    };
 
-  if (data.cityName != null) {
-    checkForCity(data.cityName);
-  }
+    if (data.cityName != null) {
+      checkForCity(data.cityName);
+    }
 
-  query(
-    `UPDATE timeline_posts SET
+    query(
+      `UPDATE timeline_posts SET
       title = COALESCE($1, title),
       text = COALESCE($2, text),
       city_name = COALESCE($3, city_name),
@@ -118,41 +121,46 @@ router.patch('/:postId', requireAuth, (req: Request, res: Response) => {
       news_url = COALESCE($5, news_url),
       date = COALESCE($6, date)
     WHERE id = $7 RETURNING *;`,
-    [
-      data.title,
-      data.text,
-      data.cityName,
-      data.imageURL,
-      data.newsURL,
-      data.date,
-      data.id,
-    ],
-  )
-    .then((dbRes: QueryResult<TimelinePost>) => {
-      res.json(fromDatabase(dbRes.rows[0]));
-    })
-    .catch((err: any) => {
-      console.error(err.stack);
-      res.status(500).json({ error: 'An error occured' });
-    });
-});
+      [
+        data.title,
+        data.text,
+        data.cityName,
+        data.imageURL,
+        data.newsURL,
+        data.date,
+        data.id,
+      ],
+    )
+      .then((dbRes: QueryResult<TimelinePost>) => {
+        res.json(fromDatabase(dbRes.rows[0]));
+      })
+      .catch((err: any) => {
+        console.error(err.stack);
+        res.status(500).json({ error: 'An error occured' });
+      });
+  },
+);
 
-router.delete('/:postId', requireAuth, (req: Request, res: Response) => {
-  const postId = req.params?.postId;
+router.delete(
+  '/:postId',
+  [requireAuth, requireAdmin],
+  (req: Request, res: Response) => {
+    const postId = req.params?.postId;
 
-  if (!postId) {
-    res.status(400).json({ error: 'Invalid request' });
-    return;
-  }
+    if (!postId) {
+      res.status(400).json({ error: 'Invalid request' });
+      return;
+    }
 
-  query(`DELETE FROM timeline_posts WHERE id = $1 RETURNING *;`, [postId])
-    .then((dbRes: QueryResult<TimelinePost>) => {
-      res.json(fromDatabase(dbRes.rows[0]));
-    })
-    .catch((err: any) => {
-      console.error(err);
-      res.status(500).json({ error: 'An error occured' });
-    });
-});
+    query(`DELETE FROM timeline_posts WHERE id = $1 RETURNING *;`, [postId])
+      .then((dbRes: QueryResult<TimelinePost>) => {
+        res.json(fromDatabase(dbRes.rows[0]));
+      })
+      .catch((err: any) => {
+        console.error(err);
+        res.status(500).json({ error: 'An error occured' });
+      });
+  },
+);
 
 export default router;

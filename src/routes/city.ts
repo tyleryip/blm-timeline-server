@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { QueryResult } from 'pg';
 import { query, createID } from '../util/db';
 import randomColor from 'randomcolor';
-import { requireAuth } from '../util/auth';
+import { requireAuth, requireAdmin } from '../util/auth';
 
 const router = Router();
 
@@ -48,29 +48,33 @@ router.get('/', (req: Request, res: Response) => {
     });
 });
 
-router.post('/', requireAuth, async (req: Request, res: Response) => {
-  const data = {
-    id: createID(),
-    name: req.body?.name.substring(0, 2048) || null,
-    colour: (await generateColour()) || null,
-  };
+router.post(
+  '/',
+  [requireAuth, requireAdmin],
+  async (req: Request, res: Response) => {
+    const data = {
+      id: createID(),
+      name: req.body?.name.substring(0, 2048) || null,
+      colour: (await generateColour()) || null,
+    };
 
-  if (data.name == null || data.colour == null) {
-    res.status(400).json({ error: 'Invalid request' });
-    return;
-  }
+    if (data.name == null || data.colour == null) {
+      res.status(400).json({ error: 'Invalid request' });
+      return;
+    }
 
-  query(
-    `INSERT INTO cities (id, name, colour) VALUES ($1, $2, $3) RETURNING *;`,
-    [data.id, data.name, data.colour],
-  )
-    .then((dbRes: QueryResult<any>) => {
-      res.json(dbRes.rows[0]);
-    })
-    .catch((err: any) => {
-      console.error(err.stack);
-      res.status(500).json({ error: 'An error occured' });
-    });
-});
+    query(
+      `INSERT INTO cities (id, name, colour) VALUES ($1, $2, $3) RETURNING *;`,
+      [data.id, data.name, data.colour],
+    )
+      .then((dbRes: QueryResult<any>) => {
+        res.json(dbRes.rows[0]);
+      })
+      .catch((err: any) => {
+        console.error(err.stack);
+        res.status(500).json({ error: 'An error occured' });
+      });
+  },
+);
 
 export default router;

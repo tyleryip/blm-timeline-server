@@ -2,8 +2,11 @@
 import { Router } from 'express';
 import timeline from './timeline';
 import city from './city';
+import auth from './auth';
 
 const router = Router();
+router.use('/auth', auth);
+
 router.use('/timeline', timeline);
 router.use('/city', city);
 
