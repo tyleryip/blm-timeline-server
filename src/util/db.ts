@@ -6,7 +6,6 @@ let pool: Pool;
 export const init = (): void => {
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: true
   });
 
   pool.query(
